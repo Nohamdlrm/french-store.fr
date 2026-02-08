@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue sur l'Espace Privé</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c2f33, #23272a);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .card {
+            text-align: center;
+            padding: 3rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        h1 { font-size: 3rem; margin-bottom: 1rem; }
+        .btn-discord {
+            background-color: #5865F2;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-discord:hover { background-color: #4752c4; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Bienvenue</h1>
+        <p>Accédez à l'espace membre en vous connectant.</p>
+        <br><br>
+        <a href="/auth/discord" class="btn-discord">Se connecter via Discord</a>
+    </div>
+</body>
+</html>
