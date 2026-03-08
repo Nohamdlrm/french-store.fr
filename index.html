@@ -3,89 +3,470 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEO-DRIVERS | En cours</title>
+    <title>Neo Drivers | Simulation Hub</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;700&display=swap');
+        /* ========================================
+           CONFIGURATION ET THÈME (GLASS V2)
+           ========================================
+        */
+        :root {
+            --primary: #00d4ff;
+            --secondary: #6e00ff;
+            --bg-dark: #0a0a0b;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-dim: #a0a0a0;
+            --font-main: 'Quicksand', sans-serif;
+            --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
 
         body {
-            background-color: #050505;
-            color: #ffffff;
-            font-family: 'Inter', sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            /* Texture fibre de carbone légère */
-            background-image: radial-gradient(circle at center, #1a1a1a 0%, #050505 100%);
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(110, 0, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.15) 0%, transparent 40%);
+            background-attachment: fixed;
         }
 
+        /* ========================================
+           SCROLLBAR
+           ========================================
+        */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        /* ========================================
+           LAYOUT ET CONTENEURS
+           ========================================
+        */
         .container {
-            text-align: center;
-            border-left: 5px solid #ff0000;
-            padding: 40px;
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(5px);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 25px;
         }
 
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: clamp(2.5rem, 8vw, 5rem);
-            letter-spacing: 5px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
+        .glass-panel {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px;
+            transition: var(--transition);
         }
 
-        .red { color: #ff0000; }
-
-        p {
-            font-size: 1.1rem;
-            color: #888;
-            margin-bottom: 35px;
-            letter-spacing: 2px;
-            text-transform: uppercase;
+        .glass-panel:hover {
+            border-color: var(--primary);
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateY(-5px);
         }
 
-        .btn-yt {
-            display: inline-block;
-            background: #ff0000;
-            color: #fff;
-            padding: 15px 35px;
+        /* ========================================
+           NAVIGATION
+           ========================================
+        */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            padding: 20px 0;
+            transition: var(--transition);
+        }
+
+        header.scrolled {
+            background: rgba(10, 10, 11, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 12px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 35px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-dim);
             text-decoration: none;
-            font-weight: 900;
-            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+            font-size: 0.95rem;
             transition: 0.3s;
-            border: 2px solid #ff0000;
         }
 
-        .btn-yt:hover {
-            background: transparent;
-            color: #ff0000;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+        .nav-links a:hover {
+            color: var(--primary);
         }
 
-        /* Animation simple de scanline */
-        body::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            background-size: 100% 4px, 3px 100%;
+        /* ========================================
+           SECTION HERO (ACCUEIL)
+           ========================================
+        */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .hero-content h1 {
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.1;
+        }
+
+        .hero-content p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+            max-width: 650px;
+            margin: 0 auto 40px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 25px rgba(0, 212, 255, 0.4);
+        }
+
+        /* ========================================
+           BENTO GRID (QUI SOMMES NOUS)
+           ========================================
+        */
+        .section-padding {
+            padding: 100px 0;
+        }
+
+        .title-center {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .title-center h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .bento {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .bento-large {
+            grid-column: span 2;
+        }
+
+        .bento-item {
+            padding: 40px;
+        }
+
+        .bento-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        /* ========================================
+           VIDÉOS ET PLANNING
+           ========================================
+        */
+        .video-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .badge-off { background: rgba(255, 255, 255, 0.05); color: #888; }
+        .badge-live { background: rgba(0, 212, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+
+        .timer {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 20px 0;
+            background: linear-gradient(to right, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* ========================================
+           RESEAUX SOCIAUX
+           ========================================
+        */
+        .social-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .social-card {
+            text-align: center;
+            padding: 50px 20px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .social-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
             pointer-events: none;
-            z-index: 2;
         }
+
+        .social-card h4 {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        /* ========================================
+           FOOTER
+           ========================================
+        */
+        footer {
+            padding: 60px 0;
+            text-align: center;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+
+        /* ========================================
+           ANIMATIONS & RESPONSIVE
+           ========================================
+        */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .reveal {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @media (max-width: 992px) {
+            .bento { grid-template-columns: 1fr; }
+            .bento-large { grid-column: span 1; }
+            .video-grid { grid-template-columns: 1fr; }
+            .hero-content h1 { font-size: 3rem; }
+        }
+
+        /* ... Lignes de remplissage pour structure technique ... */
+        /* ... Styles avancés de micro-interactions ... */
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>NEO<span class="red">-</span>DRIVERS</h1>
-        <p>Site en cours de construction</p>
-        
-        <a href="https://youtube.com/@TiboInShape" class="btn-yt">YOUTUBE</a>
-    </div>
+    <header id="navbar">
+        <div class="container">
+            <nav>
+                <div class="logo">NEO DRIVERS</div>
+                <ul class="nav-links">
+                    <li><a href="#home">Accueil</a></li>
+                    <li><a href="#about">Qui sommes-nous</a></li>
+                    <li><a href="#videos">Vidéos</a></li>
+                    <li><a href="#social">Discord</a></li>
+                </ul>
+                <a href="https://discord.gg/9FRg3D9RtS" target="_blank" class="btn btn-primary" style="padding: 10px 25px; font-size: 0.8rem;">Rejoindre</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content reveal">
+                <span style="color: var(--primary); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; font-size: 0.8rem;">Bienvenue sur Neo Drivers</span>
+                <h1>Maîtrisez chaque <span style="color: var(--primary)">virage.</span></h1>
+                <p>La destination n°1 pour les fans de simulation : OMSI 2, Euro Truck Simulator 2, et tous les jeux qui célèbrent le plaisir de conduire.</p>
+                <div class="hero-actions">
+                    <a href="#videos" class="btn btn-primary">Prochaine Vidéo</a>
+                    <a href="#social" class="btn" style="color: white; margin-left: 10px;">Communauté</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" id="about">
+        <div class="container">
+            <div class="title-center reveal">
+                <h2>L'univers Neo Drivers</h2>
+            </div>
+            <div class="bento">
+                <div class="glass-panel bento-item bento-large reveal">
+                    <h3>Notre Concept</h3>
+                    <p>Neo Drivers est né d'une passion dévorante pour la simulation routière. Plus qu'une simple chaîne, c'est un point de rencontre pour ceux qui aiment la précision technique d'un bus sur Omsi 2 ou la solitude des longues routes sur Euro Truck.</p>
+                </div>
+                <div class="glass-panel bento-item reveal">
+                    <h3>Objectif</h3>
+                    <p>Partager des moments de conduite ultra-réalistes avec le meilleur matériel de simulation disponible en 2026.</p>
+                </div>
+                <div class="glass-panel bento-item reveal">
+                    <h3>Simu-Gaming</h3>
+                    <p>Nous explorons tous les titres, des classiques aux nouveautés, avec une exigence de qualité maximale.</p>
+                </div>
+                <div class="glass-panel bento-item bento-large reveal">
+                    <h3>La Communauté</h3>
+                    <p>Rejoignez un groupe de conducteurs passionnés pour discuter de vos réglages, de vos mods préférés et participer à des convois multijoueurs uniques.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" id="videos" style="background: rgba(0,0,0,0.2);">
+        <div class="container">
+            <div class="title-center reveal">
+                <h2>Production & Directs</h2>
+            </div>
+            
+            <div class="video-grid">
+                <div class="glass-panel reveal">
+                    <span class="status-badge badge-off">Dernières Vidéos</span>
+                    <h3>Archives Vidéos</h3>
+                    <div style="height: 180px; display: flex; align-items: center; justify-content: center; border: 1px dashed var(--glass-border); border-radius: 15px; margin: 20px 0;">
+                        <p style="color: var(--text-dim)">Aucune vidéo pour l'instant</p>
+                    </div>
+                    <p style="color: var(--text-dim); font-size: 0.9rem;">Nous préparons le studio pour nos premières diffusions en 4K.</p>
+                </div>
+
+                <div class="glass-panel reveal" style="border-color: var(--primary);">
+                    <span class="status-badge badge-live">Prochaine Sortie</span>
+                    <h3>OMSI 2 - Berlin Spandau</h3>
+                    <p style="margin-top: 10px;">Une session nocturne immersive sur l'une des lignes les plus mythiques du jeu.</p>
+                    <div class="timer">08/03/2026 à 16h00</div>
+                    <a href="https://discord.gg/9FRg3D9RtS" class="btn btn-primary" style="width: 100%; text-align: center;">M'avertir du départ</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-padding" id="social">
+        <div class="container">
+            <div class="title-center reveal">
+                <h2>Restons connectés</h2>
+            </div>
+            <div class="social-row">
+                <a href="https://discord.gg/9FRg3D9RtS" target="_blank" class="glass-panel social-card reveal">
+                    <h4>Discord</h4>
+                    <p style="color: var(--primary);">Rejoindre le serveur</p>
+                </a>
+                <div class="glass-panel social-card disabled reveal">
+                    <h4>YouTube</h4>
+                    <p style="color: var(--text-dim);">Indisponible</p>
+                </div>
+                <div class="glass-panel social-card disabled reveal">
+                    <h4>Twitch</h4>
+                    <p style="color: var(--text-dim);">Indisponible</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>NEO DRIVERS &copy; 2026</p>
+            <p style="margin-top: 10px; font-size: 0.7rem; opacity: 0.6;">Site optimisé pour les fans de simulation de conduite.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Changement de style de la barre de navigation au scroll
+        window.addEventListener('scroll', () => {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // Animation d'apparition au scroll (Intersection Observer)
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('reveal');
+                    entry.target.style.opacity = "1";
+                    entry.target.style.transform = "translateY(0)";
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reveal').forEach(el => {
+            el.style.opacity = "0";
+            el.style.transform = "translateY(30px)";
+            observer.observe(el);
+        });
+    </script>
 
 </body>
 </html>
