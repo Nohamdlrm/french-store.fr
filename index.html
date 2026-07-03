@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>McManager Empire Tycoon Pro - Elite Edition v4.0.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --mcd-red: #DA291C;
+            --mcd-yellow: #FFC72C;
+            --mcd-green: #006241;
+            --mcd-dark: #0b0f19;
+            --card-bg: rgba(22, 30, 49, 0.8);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --radius-bento: 24px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Quicksand', sans-serif; }
+        
+        body {
+            background: linear-gradient(135deg, var(--mcd-dark) 0%, #04060a 100%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .mcd-logo-svg { width: 45px; height: 45px; fill: var(--mcd-yellow); }
+
+        /* MODAL CHANGELOG */
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(12px); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .changelog-box {
+            background: #111827; border: 2px solid var(--mcd-yellow);
+            border-radius: var(--radius-bento); padding: 2.5rem; max-width: 750px; width: 90%;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6); max-height: 90vh; overflow-y: auto;
+        }
+        .changelog-version { background: var(--mcd-red); color: white; padding: 4px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; }
+        .changelog-list { margin: 1.5rem 0; list-style: none; }
+        .changelog-list li { margin-bottom: 16px; display: flex; align-items: flex-start; gap: 12px; font-size: 0.95rem; line-height: 1.4; }
+        .changelog-list li i { color: var(--mcd-yellow); margin-top: 4px; font-size: 1.1rem; }
+
+        /* EXCLUSIVE MODALS FOR INSPECTIONS AND JUDGE */
+        .inspection-box {
+            background: #151d30; border: 3px solid #3b82f6; border-radius: var(--radius-bento);
+            padding: 2.5rem; max-width: 900px; width: 95%; max-height: 95vh; overflow-y: auto;
+        }
+        .kitchen-blueprint {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; background: #090d16;
+            padding: 20px; border-radius: 16px; margin: 1.5rem 0; border: 1px solid rgba(255,255,255,0.05);
+        }
+        .blueprint-zone {
+            background: rgba(255,255,255,0.02); border: 2px solid var(--card-border); border-radius: 12px;
+            padding: 20px; text-align: center; cursor: pointer; transition: var(--transition);
+        }
+        .blueprint-zone.dirty { border-color: var(--mcd-red); background: rgba(218, 41, 28, 0.1); }
+        .blueprint-zone.clean { border-color: var(--success); background: rgba(16, 185, 129, 0.1); }
+
+        .court-box {
+            background: #1c120c; border: 3px solid #b45309; border-radius: var(--radius-bento);
+            padding: 2.5rem; max-width: 650px; width: 90%; text-align: center;
+        }
+
+        /* HEADER & NAVIGATION */
+        header {
+            background: rgba(0, 98, 65, 0.25); backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--card-border); padding: 1rem 2rem;
+            position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand h1 { font-size: 1.5rem; font-weight: 700; }
+        .brand span { color: var(--mcd-yellow); }
+
+        nav { display: flex; gap: 4px; background: rgba(0, 0, 0, 0.4); padding: 6px; border-radius: 40px; flex-wrap: wrap; }
+        .nav-btn {
+            background: transparent; border: none; color: var(--text-muted);
+            padding: 10px 16px; border-radius: 30px; cursor: pointer;
+            font-weight: 600; font-size: 0.85rem; transition: var(--transition);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .nav-btn:hover, .nav-btn.active { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+        .nav-btn.active { background: var(--mcd-green); box-shadow: 0 4px 15px rgba(0, 98, 65, 0.4); }
+
+        /* BENTO ELEMENTS */
+        .container { max-width: 1400px; margin: 2.5rem auto; padding: 0 1.5rem; }
+        .game-panel { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .game-panel.active { display: block; }
+        
+        .bento-box {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: var(--radius-bento); padding: 2rem;
+            backdrop-filter: blur(20px); box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            margin-bottom: 1.5rem;
+        }
+        .bento-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 12px; }
+
+        .status-ribbon {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.3); padding: 15px 20px; border-radius: 14px; margin-bottom: 1.5rem;
+        }
+        .status-indicator { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+        .dot.open { background: var(--success); box-shadow: 0 0 10px var(--success); }
+        .dot.closed { background: var(--mcd-red); box-shadow: 0 0 10px var(--mcd-red); }
+        .dot.rush { background: var(--warning); box-shadow: 0 0 12px var(--warning); animation: pulse 1s infinite; }
+
+        .restaurant-layout {
+            display: grid; grid-template-columns: repeat(6, 1fr); gap: 15px;
+            background: rgba(0, 0, 0, 0.5); padding: 25px; border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.05); min-height: 320px;
+        }
+        .layout-slot {
+            background: rgba(255,255,255,0.01); border: 2px dashed rgba(255,255,255,0.08);
+            border-radius: 14px; aspect-ratio: 1; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 6px; text-align: center;
+            padding: 8px; position: relative; transition: var(--transition);
+        }
+        .layout-slot.active-object { background: rgba(255,255,255,0.04); border: 1px solid var(--card-border); }
+        
+        .slot-actions { display: none; position: absolute; inset: 0; background: rgba(11, 15, 25, 0.95); border-radius: 12px; flex-direction: column; justify-content: center; gap: 5px; padding: 5px; }
+        .layout-slot:hover .slot-actions { display: flex; }
+
+        .slot-status { font-size: 0.7rem; padding: 2px 6px; border-radius: 8px; font-weight: 700; text-transform: uppercase; }
+        .status-ok { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+        .status-down { background: rgba(218, 41, 28, 0.15); color: #ef4444; }
+        .status-off { background: rgba(156, 163, 175, 0.15); color: #9ca3af; }
+
+        /* STATS */
+        .stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
+        .stat-mini-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 1.5rem; display: flex; align-items: center; gap: 15px; }
+        .stat-info p { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; }
+        .stat-info h3 { font-size: 1.4rem; font-weight: 700; margin-top: 2px; }
+
+        /* BUTTONS */
+        .btn {
+            background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%);
+            border: 1px solid var(--card-border); color: var(--text-main);
+            padding: 12px 18px; border-radius: 14px; cursor: pointer;
+            font-weight: 600; font-size: 0.9rem; display: inline-flex;
+            align-items: center; justify-content: center; gap: 8px; transition: var(--transition); width: 100%;
+        }
+        .btn:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.18); background: rgba(255,255,255,0.06); }
+        .btn-primary { background: var(--mcd-yellow); color: #000; border: none; }
+        .btn-primary:hover { background: #e5b325; }
+        .btn-action { background: var(--mcd-green); color: white; border: none; }
+        .btn-action:hover { background: #004d33; }
+        .btn-danger { background: rgba(218, 41, 28, 0.2); color: #f87171; border: 1px solid rgba(218, 41, 28, 0.4); }
+        .btn-danger:hover { background: var(--mcd-red); color: white; }
+        .btn-mini { padding: 4px 8px; font-size: 0.75rem; border-radius: 8px; width: auto; }
+
+        .orders-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+        .order-card { background: rgba(255,255,255,0.02); border: 1px solid var(--card-border); border-radius: 16px; padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between; }
+        .progress-bg { background: rgba(255,255,255,0.05); height: 6px; border-radius: 3px; overflow: hidden; margin: 12px 0; }
+        .progress-fill { background: var(--success); height: 100%; width: 100%; }
+
+        .resto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .resto-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px; padding: 1.75rem; position: relative; }
+        .resto-card.active-resto { border: 2px solid var(--mcd-yellow); }
+        .resto-badge { position: absolute; top: 20px; right: 20px; background: var(--mcd-green); font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; font-weight: 600; }
+
+        .logs-box { height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+        .log-entry { font-size: 0.85rem; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02); border-left: 3px solid #9CA3AF; }
+        .log-entry.success { border-left-color: var(--success); }
+        .log-entry.danger { border-left-color: var(--mcd-red); }
+        .log-entry.warning { border-left-color: var(--warning); }
+
+        .kid-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        .kid-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(167, 139, 250, 0.2); border-radius: 16px; padding: 15px; text-align: center; }
+
+        #notification-zone { position: fixed; bottom: 25px; right: 25px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; width: 340px; }
+        .toast { background: #111827; border: 1px solid var(--card-border); padding: 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); font-size: 0.9rem; display: flex; align-items: center; gap: 12px; }
+
+        .role-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 6px; border-radius: 6px; text-transform: uppercase; margin-top: 4px; }
+        .role-cuisinier { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .role-serveur { background: rgba(59, 130, 246, 0.15); color: #3b82f6; }
+        .role-manager { background: rgba(16, 185, 129, 0.15); color: var(--success); }
+        .role-nettoyage { background: rgba(139, 92, 246, 0.15); color: #a78bfa; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 600; }
+        .form-control { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--card-border); border-radius: 10px; padding: 10px; color: white; font-family: inherit; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    </style>
+</head>
+<body>
+
+    <!-- MODAL CHANGELOG INITIAL -->
+    <div id="changelog-modal" class="modal-overlay" style="display: none;">
+        <div class="changelog-box">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="font-weight: 700;"><i class="fa-solid fa-star" style="color:var(--mcd-yellow)"></i> SUPER MISE À JOUR MAJEURE !</h2>
+                <span class="changelog-version">v4.0.0</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1rem;">L'extension administrative la plus gigantesque est arrivée. Voici vos nouveaux outils RP :</p>
+            <ul class="changelog-list">
+                <li><i class="fa-solid fa-child-reaching" style="color:#a78bfa"></i> <strong>Espace Kid Zone :</strong> Suivez les enfants présents dans les aires de jeux, suivez leur jauge de bonheur et collectez leurs points de fidélité !</li>
+                <li><i class="fa-solid fa-gavel" style="color:#ef4444"></i> <strong>Alerte Inspection de 15h00 :</strong> Chaque jour à 15h tapantes, l'Inspecteur du Travail bloque le jeu. Remplissez le plan de cuisine, attribuez une note libre et choisissez la sanction.</li>
+                <li><i class="fa-solid fa-scale-balanced"></i> <strong>Tribunal National & Juge :</strong> Si vous subissez une fermeture définitive, attendez 30 secondes en cellule de crise puis passez devant le Juge pour tenter d'obtenir une réouverture immédiate.</li>
+                <li><i class="fa-solid fa-comments-dollar"></i> <strong>Vente de Concession & Création Manuelle :</strong> Revendez vos franchises acquises pour récupérer un pactole colossal, ou concevez votre propre restaurant personnalisé avec un capital vierge à 0€ !</li>
+                <li><i class="fa-solid fa-clipboard-list"></i> <strong>Registre d'archives :</strong> Un onglet complet pour relire l'historique et les motifs de toutes vos inspections passées.</li>
+            </ul>
+            <button class="btn btn-primary" onclick="acceptChangelog()" style="padding: 14px;">Prendre les Commandes de la Mise à Jour v4.0.0</button>
+        </div>
+    </div>
+
+    <!-- POPUP EXCLUSIVE : L'INSPECTEUR DU TRAVAIL (15H00) -->
+    <div id="inspection-modal" class="modal-overlay" style="display: none;">
+        <div class="inspection-box">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:12px;">
+                <h2 style="color:#3b82f6;"><i class="fa-solid fa-user-shield"></i> INSPECTION INTERACTIVE DU TRAVAIL ET DE L'HYGIÈNE</h2>
+                <span style="font-weight:700; background:#3b82f6; padding:4px 10px; border-radius:10px;" id="inspect-hour-title">15:00</span>
+            </div>
+            
+            <p style="margin-top:15px; font-size:0.95rem; color:var(--text-muted);">L'inspecteur examine actuellement le plan technique de votre cuisine en temps réel. Cliquez sur les zones pour évaluer et nettoyer l'insalubrité :</p>
+            
+            <div class="kitchen-blueprint" id="inspect-blueprint-grid"></div>
+
+            <div style="display:grid; grid-template-columns:1fr 2fr; gap:1.5rem; margin-top:15px;">
+                <div class="form-group">
+                    <label>Attribuer une note finale (Sans limite) :</label>
+                    <input type="number" id="inspect-note" class="form-control" value="20" placeholder="Ex: 15, 20, 100...">
+                </div>
+                <div class="form-group">
+                    <label>Commentaire officiel du rapport d'inspection :</label>
+                    <input type="text" id="inspect-comment" class="form-control" value="Contrôle général des installations de friture et de l'état des sols.">
+                </div>
+            </div>
+
+            <div style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:15px;">
+                <label style="display:block; margin-bottom:10px; font-weight:700; font-size:0.95rem;">DÉCISION ADMINISTRATIVE FINALE :</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+                    <button class="btn btn-action" onclick="submitInspection('ok')"><i class="fa-solid fa-check"></i> Laisser Ouvert</button>
+                    <button class="btn btn-primary" onclick="submitInspection('warning')"><i class="fa-solid fa-triangle-exclamation"></i> Mettre un Avertissement</button>
+                    <button class="btn btn-danger" onclick="submitInspection('close')"><i class="fa-solid fa-ban"></i> Fermer la Franchise Définitivement</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP EXCLUSIVE : LE TRIBUNAL ET LE JUGE (SUITE FERMETURE) -->
+    <div id="court-modal" class="modal-overlay" style="display: none;">
+        <div class="court-box">
+            <i class="fa-solid fa-gavel" style="font-size:3.5rem; color:#b45309; margin-bottom:15px;"></i>
+            <h2>TRIBUNAL ADMINISTRATIF DE LA FRANCHISE</h2>
+            <p style="color:var(--text-muted); margin:12px 0; font-size:0.95rem;">Votre établissement a été fermé d'urgence. Transfert de votre dossier juridique en cours...</p>
+            
+            <div id="court-timer-box" style="background:rgba(0,0,0,0.4); padding:15px; border-radius:12px; font-size:1.5rem; font-weight:700; color:var(--mcd-red); margin:20px 0;">
+                Audience dans : <span id="court-countdown">30</span>s
+            </div>
+
+            <div id="court-actions-box" style="display:none; flex-direction:column; gap:10px;">
+                <p style="color:var(--success); font-weight:600; margin-bottom:5px;"><i class="fa-solid fa-user-tie"></i> Le Juge écoute vos plaidoiries. Quelle est votre défense ?</p>
+                <button class="btn btn-action" onclick="judgeVerdict(true)">Plaider la bonne foi (Réouvrir le restaurant)</button>
+                <button class="btn btn-danger" onclick="judgeVerdict(false)">Accepter la sanction (Maintenir fermé définitivement)</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER PRINCIPAL -->
+    <header>
+        <div class="brand">
+            <svg class="mcd-logo-svg" viewBox="0 0 100 100">
+                <path d="M15,85 C15,40 33,20 48,50 C48,52 49,54 50,54 C51,54 52,52 52,50 C67,20 85,40 85,85 L73,85 C73,50 62,38 52,65 L48,65 C38,38 27,50 27,85 Z"/>
+            </svg>
+            <h1>Mc<span>Manager</span> Ultimate Tycoon</h1>
+        </div>
+        <nav>
+            <button class="nav-btn active" onclick="switchTab('dashboard')"><i class="fa-solid fa-store"></i> Salle & Bornes</button>
+            <button class="nav-btn" onclick="switchTab('network')"><i class="fa-solid fa-network-wired"></i> Franchises</button>
+            <button class="nav-btn" onclick="switchTab('kidzone')"><i class="fa-solid fa-child-reaching"></i> Kid Zone</button>
+            <button class="nav-btn" onclick="switchTab('kitchen')"><i class="fa-solid fa-kitchen-set"></i> Cuisine</button>
+            <button class="nav-btn" onclick="switchTab('inspections-history')"><i class="fa-solid fa-file-invoice"></i> Rapports Inspections</button>
+            <button class="nav-btn" onclick="switchTab('recruitment')"><i class="fa-solid fa-user-tie"></i> RH</button>
+            <button class="nav-btn" onclick="switchTab('stock')"><i class="fa-solid fa-boxes-stacked"></i> Stocks</button>
+        </nav>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <div id="game-clock" style="font-size: 0.9rem; font-weight:600; color:var(--text-muted);">Jour 1 - 08:00</div>
+            <button class="btn btn-danger btn-mini" onclick="resetAllData()"><i class="fa-solid fa-rotate"></i> Reset</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- STATS BAR -->
+        <div class="stats-bar">
+            <div class="stat-mini-card" style="border-left: 4px solid var(--success)">
+                <div class="stat-info"><p>Trésorerie</p><h3 id="stat-money">3 500.00 €</h3></div>
+            </div>
+            <div class="stat-mini-card" style="border-left: 4px solid var(--mcd-yellow)">
+                <div class="stat-info"><p>Clients Global</p><h3 id="stat-clients-count">0</h3></div>
+            </div>
+            <div class="stat-mini-card" style="border-left: 4px solid #3B82F6">
+                <div class="stat-info"><p>Réputation RP</p><h3 id="stat-rep">90%</h3></div>
+            </div>
+            <div class="stat-mini-card" style="border-left: 4px solid #A78BFA">
+                <div class="stat-info"><p>Hygiène Salles</p><h3 id="stat-clean">100%</h3></div>
+            </div>
+        </div>
+
+        <div id="notification-zone"></div>
+
+        <!-- ONGLET 1 : SALLE ET BORNES -->
+        <div id="tab-dashboard" class="game-panel active">
+            <div class="status-ribbon">
+                <div class="status-indicator">
+                    <span id="status-dot" class="dot open"></span>
+                    <span>Statut : <span id="status-text" style="color:var(--success)">OUVERT</span></span>
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-mini btn-action" id="btn-toggle-status" onclick="toggleStoreStatus()">Fermer le Resto</button>
+                    <button class="btn btn-mini btn-danger" id="btn-toggle-rush" onclick="toggleRushMode()">🔥 Activer le RUSH de Midi</button>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+                <div>
+                    <div class="bento-box">
+                        <div class="bento-title"><i class="fa-solid fa-map-marked-alt" style="color:var(--mcd-yellow)"></i> Bornes tactiles & Aménagement de la Salle Active</div>
+                        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">⚠️ Équilibrage RP : En mode RUSH intense, les bornes ne tombent en panne que toutes les 25 minutes de jeu.</p>
+                        <div class="restaurant-layout" id="floor-plan"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="bento-box">
+                        <div class="bento-title"><i class="fa-solid fa-shop"></i> Mobilier de Salle</div>
+                        <div style="display:flex; flex-direction:column; gap:12px;">
+                            <button class="btn btn-primary" onclick="buyInteriorObject('borne')"><i class="fa-solid fa-desktop"></i> Installer une Borne Tactile (500€)</button>
+                            <button class="btn btn-primary" onclick="buyInteriorObject('table')"><i class="fa-solid fa-chair"></i> Placer une Table Double (200€)</button>
+                            <hr style="border:0; border-top:1px solid var(--card-border); margin:5px 0;">
+                            <button class="btn" onclick="cleanRestaurant()"><i class="fa-solid fa-soap"></i> Nettoyage d'urgence (30€)</button>
+                        </div>
+                    </div>
+
+                    <div class="bento-box">
+                        <div class="bento-title"><i class="fa-solid fa-clock-rotate-left"></i> Événements & Activités</div>
+                        <div class="logs-box" id="activity-logs"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 2 : GESTION ET EXPANSION DU RÉSEAU (FRANCHISES) -->
+        <div id="tab-network" class="game-panel">
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:1.5rem;">
+                <div class="bento-box">
+                    <div class="bento-title"><i class="fa-solid fa-city" style="color:var(--mcd-yellow)"></i> Concessions Réseau & Possibilité de Vente</div>
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1rem;">Revendez vos franchises pour engranger d'immenses bénéfices. Impossible de vendre s'il ne reste qu'un seul restaurant ouvert.</p>
+                    <div class="resto-grid" id="network-franchises-list"></div>
+                </div>
+
+                <div class="bento-box">
+                    <div class="bento-title"><i class="fa-solid fa-plus-circle" style="color:var(--success)"></i> Créer Manuellement un Resto</div>
+                    <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:12px;">Lancez une toute nouvelle franchise personnalisée avec des compteurs d'infrastructures à zéro.</p>
+                    
+                    <div class="form-group">
+                        <label>Nom de la Franchise :</label>
+                        <input type="text" id="custom-resto-name" class="form-control" placeholder="Ex: St-Brieuc Centre, Brest Port...">
+                    </div>
+                    <div class="form-group">
+                        <label>Coût de création requis :</label>
+                        <div style="font-weight:700; font-size:1.1rem; color:var(--mcd-yellow); margin-bottom:12px;">1 500.00 €</div>
+                    </div>
+                    <button class="btn btn-action" onclick="createCustomFranchise()">Valider l'ouverture du Resto</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 3 : KID ZONE -->
+        <div id="tab-kidzone" class="game-panel">
+            <div class="bento-box">
+                <div class="bento-title"><i class="fa-solid fa-child-reaching" style="color:#a78bfa"></i> Aire de Jeux & Suivi Kid Zone</div>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Suivi en temps réel des enfants présents. Ils génèrent des points de fidélité et consomment des menus enfants Happy Meal !</p>
+                <div class="kid-grid" id="kid-zone-container"></div>
+            </div>
+        </div>
+
+        <!-- ONGLET 4 : CUISINE ET FLUX DE PRODUCTION -->
+        <div id="tab-kitchen" class="game-panel">
+            <div class="bento-box">
+                <div class="bento-title"><i class="fa-solid fa-receipt" style="color:var(--mcd-red)"></i> Écran Cuisine - Préparation des commandes complexes</div>
+                <div class="orders-container" id="orders-list"></div>
+            </div>
+        </div>
+
+        <!-- ONGLET 5 : HISTORIQUE DES INSPECTIONS DU TRAVAIL -->
+        <div id="tab-inspections-history" class="game-panel">
+            <div class="bento-box">
+                <div class="bento-title"><i class="fa-solid fa-file-shield" style="color:#3b82f6"></i> Registre Central des Rapports d'Inspections</div>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:1.5rem;">Consultez les détails historiques de toutes les inspections générées quotidiennement à 15h00.</p>
+                <div style="display:flex; flex-direction:column; gap:10px;" id="inspections-history-log">
+                    <p style="color:var(--text-muted); font-size:0.9rem;">Aucun rapport enregistré pour le moment. Attendez 15h00.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 6 : RESSOURCES HUMAINES -->
+        <div id="tab-recruitment" class="game-panel">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+                <div class="bento-box">
+                    <div class="bento-title"><i class="fa-solid fa-user-plus" style="color:#10B981"></i> Candidats Disponibles</div>
+                    <div style="display:flex; flex-direction:column; gap:12px;" id="candidates-list"></div>
+                </div>
+                <div class="bento-box">
+                    <div class="bento-title"><i class="fa-solid fa-id-card-clip" style="color:#3B82F6"></i> Personnel sous Contrat Actif</div>
+                    <div style="display:flex; flex-direction:column; gap:12px;" id="employees-list"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ONGLET 7 : STOCKS -->
+        <div id="tab-stock" class="game-panel">
+            <div class="bento-box">
+                <div class="bento-title"><i class="fa-solid fa-truck-moving" style="color:var(--mcd-yellow)"></i> Approvisionnement Général</div>
+                <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:20px;" id="market-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ENGINE_VERSION = "4.0.0";
+
+        let appState = {
+            version: ENGINE_VERSION,
+            money: 3500,
+            day: 1, hour: 8, minute: 0,
+            activeRestoId: 1,
+            clientsInStore: 0,
+            nextRestoId: 4,
+            inspectionsHistory: [],
+            restaurants: {
+                1: { id: 1, name: "St-Brieuc Gare", purchased: true, cost: 0, rep: 90, clean: 100, isOpen: true, isRush: false, stock: { pain: 150, steak: 150, frites: 150, sauce: 150 }, employees: [], objects: [{type:'borne', status:'ok'}, {type:'table', status:'ok'}, {type:'borne', status:'ok'}] },
+                2: { id: 2, name: "Rennes Cleunay", purchased: false, cost: 2000, rep: 80, clean: 100, isOpen: false, isRush: false, stock: { pain: 60, steak: 60, frites: 60, sauce: 60 }, employees: [], objects: [{type:'borne', status:'ok'}] },
+                3: { id: 3, name: "Paris Opéra", purchased: false, cost: 8000, rep: 70, clean: 100, isOpen: false, isRush: false, stock: { pain: 60, steak: 60, frites: 60, sauce: 60 }, employees: [], objects: [{type:'borne', status:'ok'}] }
+            },
+            kidsInZone: [
+                { id: 101, name: "Enzo", points: 25, happiness: 95 },
+                { id: 102, name: "Inès", points: 40, happiness: 88 },
+                { id: 103, name: "Mathis", points: 15, happiness: 92 }
+            ]
+        };
+
+        let activeOrders = [];
+        let cvPool = [];
+        let temporaryInspectionBlueprint = [];
+        let courtTimerInterval = null;
+        
+        const productsAvailable = [
+            { name: "Triple Cheese", ingredients: { pain: 2, steak: 3, frites: 0, sauce: 1 }, price: 6.50 },
+            { name: "McChicken", ingredients: { pain: 2, steak: 0, frites: 0, sauce: 1 }, price: 5.80 },
+            { name: "Filet-O-Fish", ingredients: { pain: 2, steak: 0, frites: 0, sauce: 1 }, price: 5.20 },
+            { name: "Portion Frite", ingredients: { pain: 0, steak: 0, frites: 1, sauce: 0 }, price: 2.50 }
+        ];
+
+        const rolesList = ["cuisinier", "serveur", "manager", "nettoyage"];
+        const candidateNames = ["Noham", "Karl", "Yanis", "Lucas", "Mathias", "Ambre", "Inès", "Enzo"];
+
+        function loadEngineData() {
+            let encoded = localStorage.getItem('mcd_ultra_save_v40');
+            if(encoded) {
+                try {
+                    let json = JSON.parse(encoded);
+                    if(json.version === ENGINE_VERSION) appState = json;
+                } catch(e) { console.error("Échec du rechargement de la sauvegarde", e); }
+            }
+            let checkChangelog = localStorage.getItem('mcd_ultra_changelog_v40');
+            if(checkChangelog !== ENGINE_VERSION) {
+                document.getElementById('changelog-modal').style.display = 'flex';
+            }
+        }
+
+        function saveEngineData() {
+            localStorage.setItem('mcd_ultra_save_v40', JSON.stringify(appState));
+        }
+
+        function acceptChangelog() {
+            localStorage.setItem('mcd_ultra_changelog_v40', ENGINE_VERSION);
+            document.getElementById('changelog-modal').style.display = 'none';
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.game-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            if (event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+        }
+
+        function getActiveRestaurant() {
+            return appState.restaurants[appState.activeRestoId] || Object.values(appState.restaurants)[0];
+        }
+
+        function initGameEngine() {
+            loadEngineData();
+            
+            setInterval(() => {
+                let r = getActiveRestaurant();
+                if (!r) return;
+                
+                appState.minute += 10;
+                if(appState.minute >= 60) { appState.minute = 0; appState.hour++; }
+                if(appState.hour >= 23) { appState.hour = 8; appState.day++; runPayrollSimulation(); }
+
+                // --- POPUP D'INSPECTION DU TRAVAIL À 15H00 PILE ---
+                if(appState.hour === 15 && appState.minute === 0) {
+                    triggerInspectionScreen();
+                }
+
+                // Logique de panne des bornes réaliste (environ toutes les 25 mins de jeu)
+                let breakdownChance = r.isRush ? 0.08 : 0.01;
+                if(r.isOpen && Math.random() < breakdownChance) {
+                    let onlineBornes = r.objects.filter(o => o.type === 'borne' && o.status === 'ok');
+                    if(onlineBornes.length > 0) {
+                        onlineBornes[Math.floor(Math.random() * onlineBornes.length)].status = 'down';
+                        logActivity("⚠️ Incident matériel : Une borne informatique surchauffe et s'éteint.", "danger");
+                    }
+                }
+
+                // Evolution de la Kid Zone
+                if(r.isOpen && Math.random() < 0.3) {
+                    appState.kidsInZone.forEach(k => {
+                        k.points += Math.floor(Math.random() * 3) + 1;
+                        k.happiness = Math.max(10, Math.min(100, k.happiness + (Math.random() > 0.5 ? 2 : -3)));
+                    });
+                }
+
+                // Agents de nettoyage autonomes
+                let cleanerCount = r.employees.filter(e => e.role === 'nettoyage').length;
+                if(r.isOpen && appState.clientsInStore > 0) {
+                    let dirtGenerated = Math.ceil(appState.clientsInStore * 0.4);
+                    let cleanerPower = cleanerCount * 12;
+                    r.clean = Math.max(5, Math.min(100, r.clean - dirtGenerated + cleanerPower));
+                }
+
+                // Compteur de clients physique
+                if(!r.isOpen) {
+                    appState.clientsInStore = 0;
+                } else {
+                    appState.clientsInStore = activeOrders.length + appState.kidsInZone.length + Math.floor(Math.random() * 5);
+                }
+
+                if(r.isOpen && r.isRush) {
+                    injectRushClients(r, 6); 
+                }
+
+                if(r.isOpen && activeOrders.length > 0) {
+                    runServerAutomation(r);
+                }
+
+                processOrdersTimeReduction(r);
+                saveEngineData();
+                updateUI();
+            }, 2500);
+
+            // Commandes clients hors-rush
+            setInterval(() => {
+                let r = getActiveRestaurant();
+                if(!r || !r.isOpen || r.isRush) return;
+                if(Math.random() < 0.45 && activeOrders.length < 6) {
+                    generateRandomOrder(1, 6); 
+                }
+            }, 4500);
+
+            updateUI();
+        }
+
+        function generateRandomOrder(minProducts, maxProducts) {
+            let totalProductsCount = Math.floor(Math.random() * (maxProducts - minProducts + 1)) + minProducts;
+            let consolidatedIngredients = { pain: 0, steak: 0, frites: 0, sauce: 0 };
+            let totalPrice = 0;
+
+            for(let i = 0; i < totalProductsCount; i++) {
+                let product = productsAvailable[Math.floor(Math.random() * productsAvailable.length)];
+                totalPrice += product.price;
+                for(let ing in product.ingredients) { consolidatedIngredients[ing] += product.ingredients[ing]; }
+            }
+
+            activeOrders.push({
+                id: Math.floor(Math.random() * 9000) + 1000,
+                productsCount: totalProductsCount,
+                ingredients: consolidatedIngredients,
+                price: parseFloat(totalPrice.toFixed(2)),
+                currentProgress: 100
+            });
+        }
+
+        function injectRushClients(resto, count) {
+            for(let i=0; i < count; i++) {
+                if(activeOrders.length < 30) generateRandomOrder(1, 25);
+            }
+        }
+
+        function runServerAutomation(resto) {
+            let serverCount = resto.employees.filter(e => e.role === 'serveur').length;
+            if(serverCount === 0 || activeOrders.length === 0) return;
+
+            let targetOrder = activeOrders[0];
+            let checkStock = true;
+            for(let ing in targetOrder.ingredients) {
+                if(resto.stock[ing] < targetOrder.ingredients[ing]) checkStock = false;
+            }
+
+            if(checkStock) {
+                for(let ing in targetOrder.ingredients) { resto.stock[ing] -= targetOrder.ingredients[ing]; }
+                appState.money += targetOrder.price;
+                activeOrders.shift();
+                logActivity(`[Automation Serveur] Commande #${targetOrder.id} servie automatiquement.`, "success");
+            }
+        }
+
+        function processOrdersTimeReduction(resto) {
+            for (let i = activeOrders.length - 1; i >= 0; i--) {
+                let order = activeOrders[i];
+                order.currentProgress -= 4;
+                if(order.currentProgress <= 0) {
+                    resto.rep = Math.max(10, resto.rep - 3);
+                    activeOrders.splice(i, 1);
+                }
+            }
+        }
+
+        // --- INTERACTIVE INSPECTION LOGIC ---
+        function triggerInspectionScreen() {
+            temporaryInspectionBlueprint = [
+                { id: 1, zone: "Grils & Plaques", dirty: Math.random() > 0.4 },
+                { id: 2, zone: "Friteuses Sols", dirty: Math.random() > 0.3 },
+                { id: 3, zone: "Zone Emballage", dirty: Math.random() > 0.5 },
+                { id: 4, zone: "Chambre Froide", dirty: false },
+                { id: 5, zone: "Comptoir Client", dirty: Math.random() > 0.4 },
+                { id: 6, zone: "Sanitaires Staff", dirty: Math.random() > 0.6 }
+            ];
+            
+            let grid = document.getElementById('inspect-blueprint-grid');
+            grid.innerHTML = '';
+            temporaryInspectionBlueprint.forEach((z, idx) => {
+                let stateClass = z.dirty ? 'dirty' : 'clean';
+                let icon = z.dirty ? 'fa-biohazard' : 'fa-circle-check';
+                grid.innerHTML += `
+                    <div class="blueprint-zone ${stateClass}" id="zone-bp-${idx}" onclick="clickCleanZone(${idx})">
+                        <i class="fa-solid ${icon}"></i>
+                        <h4 style="margin-top:8px;">${z.zone}</h4>
+                        <span style="font-size:0.75rem; font-weight:700;">${z.dirty ? 'SALLE (À Nettoyer)' : 'CONFORME'}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('inspection-modal').style.display = 'flex';
+        }
+
+        function clickCleanZone(idx) {
+            let zone = temporaryInspectionBlueprint[idx];
+            zone.dirty = false;
+            let element = document.getElementById(`zone-bp-${idx}`);
+            element.className = "blueprint-zone clean";
+            element.innerHTML = `
+                <i class="fa-solid fa-circle-check"></i>
+                <h4 style="margin-top:8px;">${zone.zone}</h4>
+                <span style="font-size:0.75rem; font-weight:700;">CONFORME</span>
+            `;
+            showToast(`Zone [${zone.zone}] remise aux normes d'hygiène.`);
+        }
+
+        function submitInspection(decision) {
+            let note = document.getElementById('inspect-note').value;
+            let comment = document.getElementById('inspect-comment').value;
+            let r = getActiveRestaurant();
+
+            appState.inspectionsHistory.push({
+                day: appState.day,
+                restoName: r.name,
+                note: note,
+                comment: comment,
+                decision: decision.toUpperCase()
+            });
+
+            document.getElementById('inspection-modal').style.display = 'none';
+
+            if(decision === 'ok') {
+                logActivity(`Inspection approuvée : Note de ${note} décernée. Établissement validé.`, "success");
+            } else if(decision === 'warning') {
+                r.rep = Math.max(10, r.rep - 15);
+                logActivity(`Avertissement de l'inspection (Note: ${note}) : Réputation en baisse.`, "warning");
+            } else if(decision === 'close') {
+                r.isOpen = false;
+                logActivity(`🔴 FERMETURE ADMINISTRATIVE STRICTE DE [${r.name}]. Procédure juridique lancée !`, "danger");
+                triggerCourtSystem();
+            }
+            updateUI();
+        }
+
+        // --- LE SYSTÈME DU TRIBUNAL (ATTENTE 30 SECONDES) ---
+        function triggerCourtSystem() {
+            let modal = document.getElementById('court-modal');
+            let countdownSpan = document.getElementById('court-countdown');
+            let timerBox = document.getElementById('court-timer-box');
+            let actionsBox = document.getElementById('court-actions-box');
+            
+            modal.style.display = 'flex';
+            timerBox.style.display = 'block';
+            actionsBox.style.display = 'none';
+            
+            let timeLeft = 30;
+            countdownSpan.innerText = timeLeft;
+
+            if(courtTimerInterval) clearInterval(courtTimerInterval);
+
+            courtTimerInterval = setInterval(() => {
+                timeLeft--;
+                countdownSpan.innerText = timeLeft;
+                if(timeLeft <= 0) {
+                    clearInterval(courtTimerInterval);
+                    timerBox.style.display = 'none';
+                    actionsBox.style.display = 'flex';
+                }
+            }, 1000);
+        }
+
+        function judgeVerdict(reopen) {
+            let r = getActiveRestaurant();
+            document.getElementById('court-modal').style.display = 'none';
+            if(reopen) {
+                r.isOpen = true;
+                r.rep = 50; // Pénalité de réouverture
+                logActivity(`⚖️ Décision du Juge : Réouverture accordée sous surveillance immédiate.`, "success");
+            } else {
+                logActivity(`⚖️ Décision du Juge : Verdict maintenu, l'enseigne reste close.`, "danger");
+            }
+            updateUI();
+        }
+
+        // --- SELLER ET CRÉER LES FRANCHISES ---
+        function sellFranchise(id) {
+            let activeBranches = Object.values(appState.restaurants).filter(resto => resto.purchased);
+            if(activeBranches.length <= 1) {
+                showToast("Action interdite ! Impossible de vendre si vous n'avez qu'une seule franchise ouverte.");
+                return;
+            }
+
+            let target = appState.restaurants[id];
+            let salePayout = 4500; 
+            appState.money += salePayout;
+            
+            target.purchased = false;
+            target.isOpen = false;
+            target.isRush = false;
+            target.employees = [];
+
+            if(appState.activeRestoId === id) {
+                let remaining = Object.values(appState.restaurants).find(resto => resto.purchased);
+                appState.activeRestoId = remaining.id;
+            }
+
+            logActivity(`💰 Concession vendue ! Vous cédez [${target.name}] pour une somme de +${salePayout}€ !`, "success");
+            updateUI();
+        }
+
+        function createCustomFranchise() {
+            let nameInput = document.getElementById('custom-resto-name').value;
+            if(!nameInput.trim()) {
+                showToast("Veuillez saisir un nom valide pour votre franchise.");
+                return;
+            }
+
+            if(appState.money >= 1500) {
+                appState.money -= 1500;
+                let newId = appState.nextRestoId++;
+                
+                appState.restaurants[newId] = {
+                    id: newId,
+                    name: nameInput,
+                    purchased: true,
+                    cost: 1500,
+                    rep: 90,
+                    clean: 100,
+                    isOpen: true,
+                    isRush: false,
+                    stock: { pain: 0, steak: 0, frites: 0, sauce: 0 }, // TOUT À 0 COMME DEMANDÉ
+                    employees: [],
+                    objects: [] // Vide d'équipements
+                };
+
+                appState.activeRestoId = newId;
+                document.getElementById('custom-resto-name').value = '';
+                logActivity(`🛠️ Nouvelle franchise manuelle [${nameInput}] créée de toutes pièces (Matières et meubles à 0) !`, "success");
+                updateUI();
+            } else {
+                showToast("Fonds d'investissement de 1500€ non disponibles pour bâtir cette franchise.");
+            }
+        }
+
+        function purchaseNewBranch(id) {
+            let target = appState.restaurants[id];
+            if(appState.money >= target.cost && !target.purchased) {
+                appState.money -= target.cost;
+                target.purchased = true;
+                logActivity(`Expansion : Franchise de ${target.name} achetée avec succès !`, "success");
+                updateUI();
+            } else { showToast("Capital insuffisant."); }
+        }
+
+        function swapActiveBranch(id) {
+            let target = appState.restaurants[id];
+            if(target && target.purchased) {
+                appState.activeRestoId = id;
+                activeOrders = [];
+                logActivity(`Connexion au panel administratif de : ${target.name}`, "info");
+                updateUI();
+            }
+        }
+
+        function toggleStoreStatus() {
+            let r = getActiveRestaurant();
+            r.isOpen = !r.isOpen;
+            if(!r.isOpen) { r.isRush = false; activeOrders = []; appState.clientsInStore = 0; }
+            updateUI();
+        }
+
+        function toggleRushMode() {
+            let r = getActiveRestaurant();
+            if(!r.isOpen) return;
+            r.isRush = !r.isRush;
+            if(r.isRush) { injectRushClients(r, 10); logActivity("🔥 RUSH DE MIDI ACTIVÉ !", "warning"); }
+            updateUI();
+        }
+
+        function manualServeOrder(id) {
+            let r = getActiveRestaurant();
+            let index = activeOrders.findIndex(o => o.id === id);
+            if(index === -1) return;
+
+            let order = activeOrders[index];
+            let stockOk = true;
+            for(let ing in order.ingredients) { if(r.stock[ing] < order.ingredients[ing]) stockOk = false; }
+
+            if(!stockOk) { showToast("Rupture de matières premières !"); return; }
+
+            for(let ing in order.ingredients) { r.stock[ing] -= order.ingredients[ing]; }
+            appState.money += order.price;
+            r.rep = Math.min(100, r.rep + 1);
+            activeOrders.splice(index, 1);
+            updateUI();
+        }
+
+        function handleSlotAction(index, action) {
+            let r = getActiveRestaurant();
+            let item = r.objects[index];
+            if(!item) return;
+
+            if(action === 'toggle') { item.status = item.status === 'ok' ? 'off' : 'ok'; }
+            else if(action === 'fix') {
+                if(appState.money >= 60) { appState.money -= 60; item.status = 'ok'; }
+                else { showToast("Trésorerie insuffisante."); }
+            }
+            updateUI();
+        }
+
+        function buyInteriorObject(type) {
+            let r = getActiveRestaurant();
+            let cost = type === 'borne' ? 500 : 200;
+            if(appState.money >= cost) {
+                if(r.objects.length >= 18) { showToast("Espace saturé !"); return; }
+                appState.money -= cost;
+                r.objects.push({ type: type, status: 'ok' });
+                updateUI();
+            } else { showToast("Fonds insuffisants."); }
+        }
+
+        function buyIngredientStock(ing, amount, price) {
+            let r = getActiveRestaurant();
+            if(appState.money >= price) { appState.money -= price; r.stock[ing] += amount; updateUI(); }
+            else { showToast("Trésorerie insuffisante."); }
+        }
+
+        function cleanRestaurant() {
+            let r = getActiveRestaurant();
+            if(appState.money >= 30) { appState.money -= 30; r.clean = 100; updateUI(); }
+        }
+
+        function acceptCandidate(id) {
+            let index = cvPool.findIndex(c => c.id === id);
+            if(index !== -1) {
+                let r = getActiveRestaurant();
+                r.employees.push(cvPool[index]);
+                cvPool.splice(index, 1);
+                updateUI();
+            }
+        }
+
+        function fireEmployee(index) {
+            let r = getActiveRestaurant();
+            if(r.employees[index]) { r.employees.splice(index, 1); updateUI(); }
+        }
+
+        function runPayrollSimulation() {
+            let totalWages = 0;
+            Object.values(appState.restaurants).forEach(resto => {
+                if(resto.purchased) { resto.employees.forEach(emp => { totalWages += emp.salary; }); }
+            });
+            appState.money -= totalWages;
+        }
+
+        // Renouvellement continu des candidats RH
+        setInterval(() => {
+            if(cvPool.length < 5) {
+                let role = rolesList[Math.floor(Math.random() * rolesList.length)];
+                let name = candidateNames[Math.floor(Math.random() * candidateNames.length)];
+                cvPool.push({
+                    id: Math.floor(Math.random() * 8999) + 1000,
+                    name: name, role: role, salary: role === 'manager' ? 95 : 55
+                });
+                updateUI();
+            }
+        }, 12000);
+
+        function updateUI() {
+            let r = getActiveRestaurant();
+            if (!r) return;
+
+            document.getElementById('stat-money').innerText = `${appState.money.toFixed(2)} €`;
+            document.getElementById('stat-clients-count').innerText = appState.clientsInStore;
+            document.getElementById('stat-rep').innerText = `${r.rep}%`;
+            document.getElementById('stat-clean').innerText = `${r.clean}%`;
+
+            let minStr = appState.minute === 0 ? "00" : appState.minute;
+            document.getElementById('game-clock').innerText = `Jour ${appState.day} - ${appState.hour}:${minStr}`;
+
+            let dot = document.getElementById('status-dot');
+            let txt = document.getElementById('status-text');
+            let tglBtn = document.getElementById('btn-toggle-status');
+            let rshBtn = document.getElementById('btn-toggle-rush');
+
+            if(!r.isOpen) {
+                dot.className = "dot closed"; txt.innerText = "FERMÉ / COMPROMIS"; txt.style.color = "var(--mcd-red)";
+                tglBtn.innerText = "Ouvrir l'établissement"; tglBtn.className = "btn btn-mini btn-action";
+                rshBtn.style.display = "none";
+            } else if(r.isRush) {
+                dot.className = "dot rush"; txt.innerText = "RUSH INTENSE"; txt.style.color = "var(--warning)";
+                tglBtn.innerText = "Fermer"; tglBtn.className = "btn btn-mini";
+                rshBtn.innerText = "🛑 Stopper Rush"; rshBtn.style.display = "inline-block";
+            } else {
+                dot.className = "dot open"; txt.innerText = "OUVERT"; txt.style.color = "var(--success)";
+                tglBtn.innerText = "Fermer"; tglBtn.className = "btn btn-mini";
+                rshBtn.innerText = "🔥 Lancer le RUSH de Midi"; rshBtn.style.display = "inline-block";
+            }
+
+            // Rendu Grille de la Salle Active
+            let plan = document.getElementById('floor-plan');
+            plan.innerHTML = '';
+            r.objects.forEach((obj, idx) => {
+                let icon = obj.type === 'borne' ? 'fa-desktop' : 'fa-chair';
+                let label = obj.type === 'borne' ? 'Borne Tactile' : 'Table Double';
+                let cls = obj.status === 'ok' ? 'status-ok' : (obj.status === 'down' ? 'status-down' : 'status-off');
+                let txtState = obj.status === 'ok' ? 'En ligne' : (obj.status === 'down' ? 'PANNE' : 'Hors-ligne');
+
+                plan.innerHTML += `
+                    <div class="layout-slot active-object">
+                        <i class="fa-solid ${icon}" style="color:${obj.status==='down'?'var(--mcd-red)':''}"></i>
+                        <span style="font-size:0.75rem; font-weight:600;">${label}</span>
+                        <span class="slot-status ${cls}">${txtState}</span>
+                        <div class="slot-actions">
+                            <button class="btn btn-mini btn-primary" onclick="handleSlotAction(${idx}, 'toggle')">Bascule On/Off</button>
+                            ${obj.status==='down'?`<button class="btn btn-mini btn-danger" onclick="handleSlotAction(${idx}, 'fix')">Dépanner (60€)</button>`:''}
+                        </div>
+                    </div>
+                `;
+            });
+            for(let i=r.objects.length; i<18; i++) {
+                plan.innerHTML += `<div class="layout-slot"><span style="color:rgba(255,255,255,0.06); font-size:0.7rem;">Libre</span></div>`;
+            }
+
+            // Rendu Kid Zone
+            let kidDiv = document.getElementById('kid-zone-container');
+            kidDiv.innerHTML = '';
+            appState.kidsInZone.forEach(k => {
+                kidDiv.innerHTML += `
+                    <div class="kid-card">
+                        <i class="fa-solid fa-child" style="color:#a78bfa; font-size:1.5rem;"></i>
+                        <div style="font-weight:700; margin-top:5px;">Enfant : ${k.name}</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Points Fidélité : <strong style="color:var(--mcd-yellow);">${k.points}</strong></div>
+                        <div style="font-size:0.8rem; color:var(--text-muted);">Bonheur : ${k.happiness}%</div>
+                    </div>
+                `;
+            });
+
+            // Rendu Écran des commandes
+            let orderDiv = document.getElementById('orders-list');
+            orderDiv.innerHTML = '';
+            if(activeOrders.length === 0) {
+                orderDiv.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">Aucune commande.</p>`;
+            } else {
+                activeOrders.forEach(o => {
+                    orderDiv.innerHTML += `
+                        <div class="order-card">
+                            <div>
+                                <div style="display:flex; justify-content:space-between;">
+                                    <span style="font-weight:700; color:var(--mcd-yellow);">${o.price.toFixed(2)}€</span>
+                                    <span style="font-size:0.75rem; color:var(--text-muted);">#${o.id}</span>
+                                </div>
+                                <p style="font-size:0.85rem; margin:6px 0;">Multi-Produits (${o.productsCount} articles)</p>
+                                <div class="progress-bg"><div class="progress-fill" style="width:${o.currentProgress}%"></div></div>
+                            </div>
+                            <button class="btn btn-primary btn-mini" onclick="manualServeOrder(${o.id})">Expédier</button>
+                        </div>
+                    `;
+                });
+            }
+
+            // Rendu de la liste de toutes les franchises
+            let netDiv = document.getElementById('network-franchises-list'); 
+            netDiv.innerHTML = '';
+            Object.values(appState.restaurants).forEach(resto => {
+                let isCurrent = resto.id === appState.activeRestoId;
+                if(resto.purchased) {
+                    netDiv.innerHTML += `
+                        <div class="resto-card ${isCurrent?'active-resto':''}">
+                            <span class="resto-badge">Sélectionné</span>
+                            <h3 style="font-weight:700;">${resto.name}</h3>
+                            <p style="font-size:0.8rem; color:var(--text-muted); margin:6px 0 12px 0;">Equipements installés : ${resto.objects.length} | Staff : ${resto.employees.length}</p>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn ${isCurrent?'btn-primary':'btn-mini'}" onclick="swapActiveBranch(${resto.id})" style="width:65%;">Gérer la salle</button>
+                                <button class="btn btn-danger btn-mini" onclick="sellFranchise(${resto.id})" style="width:35%;"><i class="fa-solid fa-sack-dollar"></i> Vendre</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    netDiv.innerHTML += `
+                        <div class="resto-card" style="opacity:0.6;">
+                            <h3 style="font-weight:700;">${resto.name}</h3>
+                            <p style="font-size:0.85rem; color:var(--mcd-yellow); margin-bottom:12px;">Rachat : ${resto.cost} €</p>
+                            <button class="btn btn-primary" onclick="purchaseNewBranch(${resto.id})">Investir</button>
+                        </div>
+                    `;
+                }
+            });
+
+            // Rendu Historique des Inspections du travail
+            let inspectHistoryDiv = document.getElementById('inspections-history-log');
+            if(appState.inspectionsHistory.length > 0) {
+                inspectHistoryDiv.innerHTML = '';
+                appState.inspectionsHistory.forEach(h => {
+                    let borderCol = h.decision === 'CLOSE' ? 'var(--mcd-red)' : (h.decision === 'WARNING' ? 'var(--warning)' : 'var(--success)');
+                    inspectHistoryDiv.innerHTML += `
+                        <div class="log-entry" style="border-left: 4px solid ${borderCol};">
+                            <strong>[Jour ${h.day}] Resto : ${h.restoName}</strong> — Note attribuée : <strong style="color:var(--mcd-yellow);">${h.note}</strong><br>
+                            <span style="font-size:0.8rem; color:var(--text-muted);">Commentaire : "${h.comment}"</span><br>
+                            <span style="font-size:0.75rem; font-weight:700; color:${borderCol}">STATUT DÉCISIONNEL : ${h.decision}</span>
+                        </div>
+                    `;
+                });
+            }
+
+            // Rendu des listes RH
+            let cvDiv = document.getElementById('candidates-list'); cvDiv.innerHTML = '';
+            cvPool.forEach(c => {
+                cvDiv.innerHTML += `
+                    <div class="log-entry" style="border-left:3px solid var(--success); display:flex; justify-content:space-between; align-items:center;">
+                        <div><strong>${c.name}</strong> <span class="role-badge role-${c.role}">${c.role}</span></div>
+                        <button class="btn btn-mini btn-primary" onclick="acceptCandidate(${c.id})">Embaucher</button>
+                    </div>
+                `;
+            });
+
+            let empDiv = document.getElementById('employees-list'); empDiv.innerHTML = '';
+            if(r.employees.length === 0) { empDiv.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">Aucun staff.</p>`; }
+            else {
+                r.employees.forEach((e, idx) => {
+                    empDiv.innerHTML += `
+                        <div class="log-entry" style="border-left:3px solid #3b82f6; display:flex; justify-content:space-between; align-items:center;">
+                            <div><strong>${e.name}</strong> <span class="role-badge role-${e.role}">${e.role}</span></div>
+                            <button class="btn btn-mini btn-danger" onclick="fireEmployee(${idx})">Licencier</button>
+                        </div>
+                    `;
+                });
+            }
+
+            // Rendu Stocks
+            let stockDiv = document.getElementById('market-list'); stockDiv.innerHTML = '';
+            for(let ing in r.stock) {
+                stockDiv.innerHTML += `
+                    <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:14px; text-align:center; border:1px solid var(--card-border);">
+                        <div style="font-weight:700; font-size:0.8rem; text-transform:uppercase; color:var(--text-muted);">${ing}</div>
+                        <div style="font-size:1.3rem; font-weight:700; margin:8px 0; color:var(--mcd-yellow);">${r.stock[ing]} u</div>
+                        <button class="btn btn-mini" onclick="buyIngredientStock('${ing}', 50, 75)">Lot +50 (75€)</button>
+                    </div>
+                `;
+            }
+        }
+
+        function logActivity(text, type="info") {
+            let logs = document.getElementById('activity-logs');
+            if(!logs) return;
+            let entry = document.createElement('div');
+            entry.className = `log-entry ${type}`;
+            let h = appState.hour < 10 ? '0'+appState.hour : appState.hour;
+            let m = appState.minute < 10 ? '0'+appState.minute : appState.minute;
+            entry.innerHTML = `<strong>[${h}:${m}]</strong> ${text}`;
+            logs.insertBefore(entry, logs.firstChild);
+            if(logs.childNodes.length > 10) logs.removeChild(logs.lastChild);
+        }
+
+        function showToast(text) {
+            let zone = document.getElementById('notification-zone');
+            if (!zone) return;
+            let toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fa-solid fa-triangle-exclamation" style="color:var(--mcd-yellow)"></i> <span>${text}</span>`;
+            zone.appendChild(toast);
+            setTimeout(() => { toast.remove(); }, 3500);
+        }
+
+        function resetAllData() { localStorage.clear(); window.location.reload(); }
+
+        window.onload = function() {
+            initGameEngine();
+        };
+    </script>
+</body>
+</html>
